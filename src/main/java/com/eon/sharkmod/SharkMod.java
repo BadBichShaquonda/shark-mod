@@ -19,19 +19,23 @@ import org.apache.logging.log4j.Logger;
 import java.util.stream.Collectors;
 
 // The value here should match an entry in the META-INF/mods.toml file
-@Mod("shark")
+@Mod("eonshark")
 public class SharkMod {
 	// Directly reference a log4j logger.
 	private static final Logger LOGGER = LogManager.getLogger();
+	public static final String MOD_ID = "eonshark";
+	public static SharkMod instance;
 
 	public SharkMod() {
 		// Register the setup method for modloading
 		FMLJavaModLoadingContext.get().getModEventBus().addListener(this::setup);
 		// Register the doClientStuff method for modloading
 		FMLJavaModLoadingContext.get().getModEventBus().addListener(this::doClientStuff);
-
+		
 		// Register ourselves for server and other game events we are interested in
 		MinecraftForge.EVENT_BUS.register(this);
+		
+		instance = this;
 	}
 
 	private void setup(final FMLCommonSetupEvent event) {
