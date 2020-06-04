@@ -23,7 +23,7 @@ modId="eonshark" #mandatory
 version="1.0" #mandatory
 
 # A display name for the mod
-displayName="Shark Mod" #mandatory
+displayName="Eon's Sharks" #mandatory
 
 # A URL to query for updates for this mod. See the JSON update specification <here>
 updateJSONURL="http://myurl.me/" #optional
@@ -41,12 +41,10 @@ credits="Sharks are cool." #optional
 authors="Dr_Shtroumphi" #optional
 
 # The description text for the mod (multi line!) (#mandatory)
-description='''
-This is a lightweight mod that adds Sharks to the game. Visit our wiki!
-'''
+description='''This is a lightweight mod that adds Sharks to the game. Visit our wiki!'''
 
 
-#DEPENDENCIES
+# DEPENDENCIES
 
 
 # A dependency - use the . to indicate dependency for a specific modid. Dependencies are optional.
