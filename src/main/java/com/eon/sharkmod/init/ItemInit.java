@@ -22,15 +22,24 @@ public class ItemInit {
 	
 	@SubscribeEvent
 	public static void registerItems(final RegistryEvent.Register<Item> event) {
+		//ITEMS
 		event.getRegistry().register(new Item(new Item.Properties().group(SharkItemGroup.instance))
 				.setRegistryName("shark_fin"));
 		
+		event.getRegistry().register(new Item(new Item.Properties().group(SharkItemGroup.instance))
+				.setRegistryName("shark_tooth"));
+		
+		//FOOD
 		event.getRegistry().register(new Item(new Item.Properties().group(SharkItemGroup.instance)
-				.food(new Food.Builder().hunger(2).saturation(1F).effect(() -> new EffectInstance(Effects.HUNGER, 200, 0), 0.85F).build()))
+				.food(new Food.Builder().hunger(3).saturation(1F).effect(() -> new EffectInstance(Effects.HUNGER, 200, 0), 0.85F).build()))
 				.setRegistryName("raw_shark_meat"));
 		
 		event.getRegistry().register(new Item(new Item.Properties().group(SharkItemGroup.instance)
-				.food(new Food.Builder().hunger(8).saturation(4F).build()))
+				.food(new Food.Builder().hunger(12).saturation(4F).build()))
 				.setRegistryName("cooked_shark_meat"));
+		
+		event.getRegistry().register(new Item(new Item.Properties().group(SharkItemGroup.instance)
+				.food(new Food.Builder().hunger(10).saturation(5F).build()))
+				.setRegistryName("shark_fin_soup"));
 	}
 }

@@ -2,6 +2,10 @@
 	"itemGroup.eonsharktab": "Shark Mod",
 	
 	"item.eonshark.shark_fin": "Shark Fin",
+	"item.eonshark.shark_tooth": "Shark Tooth",
+	
+	
 	"item.eonshark.raw_shark_meat": "Raw Shark Meat",
-	"item.eonshark.cooked_shark_meat": "Cooked Shark Meat"
+	"item.eonshark.cooked_shark_meat": "Cooked Shark Meat",
+	"item.eonshark.shark_fin_soup": "Shark Fin Soup"
 }

@@ -36,9 +36,7 @@ public class SharkMod {
 	}
 
 	private void setup(final FMLCommonSetupEvent event) {
-		// some preinit code
-		//LOGGER.info("HELLO FROM PREINIT");
-		//LOGGER.info("DIRT BLOCK >> {}", Blocks.DIRT.getRegistryName());
+		
 	}
 
 	private void doClientStuff(final FMLClientSetupEvent event) {
