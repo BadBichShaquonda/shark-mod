@@ -48,7 +48,7 @@ description='''This is a lightweight mod that adds Sharks to the game. Visit our
 
 
 # A dependency - use the . to indicate dependency for a specific modid. Dependencies are optional.
-[[dependencies.shark]] #optional
+[[dependencies.eonshark]] #optional
     # the modid of the dependency
     modId="forge" #mandatory
     # Does this dependency have to exist - if not, ordering below must be specified
@@ -61,7 +61,7 @@ description='''This is a lightweight mod that adds Sharks to the game. Visit our
     side="BOTH"
 
 # Here's another dependency
-[[dependencies.shark]]
+[[dependencies.eonshark]]
     modId="minecraft"
     mandatory=true
     versionRange="[1.15.2]"
