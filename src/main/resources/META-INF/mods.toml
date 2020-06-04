@@ -38,7 +38,7 @@ logoFile="examplemod.png" #optional
 credits="Sharks are cool." #optional
 
 # A text field displayed in the mod UI
-authors="Dr_Shtroumphi & Aearost" #optional
+authors="Dr_Shtroumphi" #optional
 
 # The description text for the mod (multi line!) (#mandatory)
 description='''
