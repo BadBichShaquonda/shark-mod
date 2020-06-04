@@ -29,10 +29,10 @@ public class SharkMod {
 		modEventBus.addListener(this::setup);
 		modEventBus.addListener(this::doClientStuff);
 		
-		// Register ourselves for server and other game events we are interested in
-		MinecraftForge.EVENT_BUS.register(this);
+		ItemInit.ITEMS.register(modEventBus);
 		
 		instance = this;
+		MinecraftForge.EVENT_BUS.register(this);
 	}
 
 	private void setup(final FMLCommonSetupEvent event) {
@@ -40,11 +40,9 @@ public class SharkMod {
 	}
 
 	private void doClientStuff(final FMLClientSetupEvent event) {
-		// do something that can only be done on the client
-		//LOGGER.info("Got game settings {}", event.getMinecraftSupplier().get().gameSettings);
+		
 	}
 
-	// You can use SubscribeEvent and let the Event Bus discover methods to call
 	@SubscribeEvent
 	public void onServerStarting(FMLServerStartingEvent event) {
 		// do something when the server starts
@@ -60,7 +58,7 @@ public class SharkMod {
 		
 		@Override
 		public ItemStack createIcon() {
-			return new ItemStack(ItemInit.shark_fin);
+			return new ItemStack(ItemInit.SHARK_FIN.get());
 		}
 	}
 }

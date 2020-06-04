@@ -7,39 +7,30 @@ import net.minecraft.item.Food;
 import net.minecraft.item.Item;
 import net.minecraft.potion.EffectInstance;
 import net.minecraft.potion.Effects;
-import net.minecraftforge.event.RegistryEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.common.Mod.EventBusSubscriber.Bus;
-import net.minecraftforge.registries.ObjectHolder; 
+import net.minecraftforge.fml.RegistryObject;
+import net.minecraftforge.registries.DeferredRegister;
+import net.minecraftforge.registries.ForgeRegistries;
 
-@Mod.EventBusSubscriber(modid = SharkMod.MOD_ID, bus = Bus.MOD)
-@ObjectHolder(SharkMod.MOD_ID)
 public class ItemInit {
-	public static final Item shark_fin = null;
-	public static final Item raw_shark_meat = null;
-	public static final Item cooked_shark_meat = null;
+	public static final DeferredRegister<Item> ITEMS = new DeferredRegister<>(ForgeRegistries.ITEMS, SharkMod.MOD_ID);
 	
-	@SubscribeEvent
-	public static void registerItems(final RegistryEvent.Register<Item> event) {
-		//ITEMS
-		event.getRegistry().register(new Item(new Item.Properties().group(SharkItemGroup.instance))
-				.setRegistryName("shark_fin"));
-		
-		event.getRegistry().register(new Item(new Item.Properties().group(SharkItemGroup.instance))
-				.setRegistryName("shark_tooth"));
-		
-		//FOOD
-		event.getRegistry().register(new Item(new Item.Properties().group(SharkItemGroup.instance)
-				.food(new Food.Builder().hunger(3).saturation(1F).effect(() -> new EffectInstance(Effects.HUNGER, 200, 0), 0.85F).build()))
-				.setRegistryName("raw_shark_meat"));
-		
-		event.getRegistry().register(new Item(new Item.Properties().group(SharkItemGroup.instance)
-				.food(new Food.Builder().hunger(12).saturation(4F).build()))
-				.setRegistryName("cooked_shark_meat"));
-		
-		event.getRegistry().register(new Item(new Item.Properties().group(SharkItemGroup.instance)
-				.food(new Food.Builder().hunger(10).saturation(5F).build()))
-				.setRegistryName("shark_fin_soup"));
-	}
+	//SIMPLE ITEMS
+	public static final RegistryObject<Item> SHARK_FIN = ITEMS.register("shark_fin", () -> 
+		new Item(new Item.Properties().group(SharkItemGroup.instance)));
+	
+	public static final RegistryObject<Item> SHARK_TOOTH = ITEMS.register("shark_tooth", () -> 
+		new Item(new Item.Properties().group(SharkItemGroup.instance)));
+	
+	//FOOD
+	public static final RegistryObject<Item> RAW_SHARK_MEAT = ITEMS.register("raw_shark_meat", () -> 
+		new Item(new Item.Properties().group(SharkItemGroup.instance)
+				.food(new Food.Builder().hunger(3).saturation(1F).effect(() -> new EffectInstance(Effects.HUNGER, 200, 0), 0.85F).build())));
+	
+	public static final RegistryObject<Item> COOKED_SHARK_MEAT = ITEMS.register("cooked_shark_meat", () -> 
+		new Item(new Item.Properties().group(SharkItemGroup.instance)
+				.food(new Food.Builder().hunger(12).saturation(4F).build())));
+	
+	public static final RegistryObject<Item> SHARK_FIN_SOUP = ITEMS.register("shark_fin_soup", () -> 
+		new Item(new Item.Properties().group(SharkItemGroup.instance)
+				.food(new Food.Builder().hunger(10).saturation(5F).build())));
 }
