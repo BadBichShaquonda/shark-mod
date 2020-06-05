@@ -4,6 +4,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import com.eon.sharkmod.init.ItemInit;
+import com.eon.sharkmod.init.ModEntityTypes;
 
 import net.minecraft.item.ItemGroup;
 import net.minecraft.item.ItemStack;
@@ -19,6 +20,7 @@ import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 // The value here should match an entry in the META-INF/mods.toml file
 @Mod("eonshark")
 public class SharkMod {
+	
 	private static final Logger LOGGER = LogManager.getLogger();
 	public static final String MOD_ID = "eonshark";
 	public static SharkMod instance;
@@ -29,6 +31,7 @@ public class SharkMod {
 		modEventBus.addListener(this::doClientStuff);
 		
 		ItemInit.ITEMS.register(modEventBus);
+		ModEntityTypes.ENTITY_TYPES.register(modEventBus);
 		
 		instance = this;
 		MinecraftForge.EVENT_BUS.register(this);
