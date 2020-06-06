@@ -1,13 +1,13 @@
 package com.eon.sharkmod.client.entity.model;
 
-import com.eon.sharkmod.entities.Shark;
+import com.eon.sharkmod.entities.SharkEntity;
 import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.vertex.IVertexBuilder;
 
 import net.minecraft.client.renderer.entity.model.EntityModel;
 import net.minecraft.client.renderer.model.ModelRenderer;
 
-public class SharkModel<T extends Shark> extends EntityModel<T> {
+public class SharkModel<T extends SharkEntity> extends EntityModel<T> {
 	private final ModelRenderer body;
 	private final ModelRenderer head;
 	private final ModelRenderer nose;
