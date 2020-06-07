@@ -7,19 +7,17 @@ import net.minecraft.entity.EntityType;
 import net.minecraft.entity.ILivingEntityData;
 import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.entity.SpawnReason;
+import net.minecraft.entity.ai.controller.LookController;
 import net.minecraft.entity.ai.controller.MovementController;
-import net.minecraft.entity.ai.goal.RandomSwimmingGoal;
 import net.minecraft.entity.passive.DolphinEntity;
 import net.minecraft.entity.passive.WaterMobEntity;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.network.datasync.DataParameter;
 import net.minecraft.network.datasync.DataSerializers;
 import net.minecraft.network.datasync.EntityDataManager;
-import net.minecraft.particles.ParticleTypes;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.SoundEvents;
 import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.IWorld;
 import net.minecraft.world.World;
@@ -33,7 +31,7 @@ public class SharkEntity extends WaterMobEntity {
 	public SharkEntity(EntityType<? extends WaterMobEntity> type, World worldIn) {
 		super(type, worldIn);
 		this.moveController = new SharkEntity.MoveHelperController(this);
-		// this.lookController = new DolphinLookController(this, 10);
+		this.lookController = new LookController(this);
 	}
 
 	/**
@@ -50,7 +48,7 @@ public class SharkEntity extends WaterMobEntity {
 	 * I think the movement controllers should be looked at before the goals
 	 */
 	protected void registerGoals() {
-		this.goalSelector.addGoal(0, new RandomSwimmingGoal(this, 1.0D, 5));
+		//this.goalSelector.addGoal(0, new RandomSwimmingGoal(this, 1.0D, 5));
 	}
 
 	/**
@@ -120,6 +118,10 @@ public class SharkEntity extends WaterMobEntity {
 	 */
 	public void tick() {
 		super.tick();
+		this.getLookController().setLookPosition(32, this.getPosYEye(), 70);
+		SharkMod.LOGGER.info("this.posX: " + this.getLookController().getLookPosX() + ", this.posY: " + this.getLookController().getLookPosY() 
+				+ ", this.posZ: " + this.getLookController().getLookPosZ() + ", is looking: " + this.getLookController().getIsLooking());
+		/*
 		if (!this.isAIDisabled()) {
 			if (this.isInWaterRainOrBubbleColumn()) {
 				this.setMoistness(2400);
@@ -154,7 +156,7 @@ public class SharkEntity extends WaterMobEntity {
 				}
 			}
 
-		}
+		}*/
 	}
 
 	static class MoveHelperController extends MovementController {
