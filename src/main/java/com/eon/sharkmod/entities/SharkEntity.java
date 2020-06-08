@@ -2,26 +2,20 @@ package com.eon.sharkmod.entities;
 
 import java.util.Random;
 
+import javax.annotation.Nullable;
+
 import com.eon.sharkmod.client.entity.ai.controller.SharkMovementHelperController;
+import com.eon.sharkmod.client.entity.ai.goal.SlayFishGoal;
 import com.eon.sharkmod.util.helper.RandomSwimmingGoal;
 
-import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.ILivingEntityData;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.MoverType;
 import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.entity.SpawnReason;
 import net.minecraft.entity.ai.controller.LookController;
-import net.minecraft.entity.ai.goal.AvoidEntityGoal;
-import net.minecraft.entity.ai.goal.BreatheAirGoal;
-import net.minecraft.entity.ai.goal.DolphinJumpGoal;
-import net.minecraft.entity.ai.goal.FindWaterGoal;
-import net.minecraft.entity.ai.goal.FollowBoatGoal;
-import net.minecraft.entity.ai.goal.HurtByTargetGoal;
-import net.minecraft.entity.ai.goal.LookAtGoal;
 import net.minecraft.entity.ai.goal.LookRandomlyGoal;
-import net.minecraft.entity.ai.goal.MeleeAttackGoal;
-import net.minecraft.entity.monster.GuardianEntity;
 import net.minecraft.entity.passive.DolphinEntity;
 import net.minecraft.entity.passive.WaterMobEntity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -30,8 +24,6 @@ import net.minecraft.network.datasync.DataParameter;
 import net.minecraft.network.datasync.DataSerializers;
 import net.minecraft.network.datasync.EntityDataManager;
 import net.minecraft.particles.ParticleTypes;
-import net.minecraft.pathfinding.PathNavigator;
-import net.minecraft.pathfinding.SwimmerPathNavigator;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.SoundEvents;
@@ -53,8 +45,8 @@ public class SharkEntity extends WaterMobEntity {
 	public SharkEntity(EntityType<? extends WaterMobEntity> type, World worldIn) {
 		super(type, worldIn);
 		this.moveController = new SharkMovementHelperController(this);
-		this.lookController = new LookController(this);
 		this.tickTimer = 0;
+		this.recalculateSize();
 	}
 
 	/**
@@ -71,16 +63,16 @@ public class SharkEntity extends WaterMobEntity {
 	 * I think the movement controllers should be looked at before the goals
 	 */
 	protected void registerGoals() {
-		// this.goalSelector.addGoal(0, new RandomSwimmingGoal(this, 1.0D, 5));
-		// this.goalSelector.addGoal(0, new LookRandomlyGoal(this));
-		this.goalSelector.addGoal(0, new FindWaterGoal(this));
-		this.goalSelector.addGoal(4, new RandomSwimmingGoal(this, 1.0D, 10));
-		this.goalSelector.addGoal(4, new LookRandomlyGoal(this));
-		this.goalSelector.addGoal(5, new LookAtGoal(this, PlayerEntity.class, 6.0F));
-		this.goalSelector.addGoal(6, new MeleeAttackGoal(this, (double) 1.2F, true));
-		this.goalSelector.addGoal(8, new FollowBoatGoal(this));
-		this.goalSelector.addGoal(9, new AvoidEntityGoal<>(this, GuardianEntity.class, 8.0F, 1.0D, 1.0D));
-		this.targetSelector.addGoal(1, (new HurtByTargetGoal(this, GuardianEntity.class)).setCallsForHelp());
+		this.goalSelector.addGoal(0, new RandomSwimmingGoal(this, 1.0D, 5));
+		this.goalSelector.addGoal(1, new LookRandomlyGoal(this));
+		this.targetSelector.addGoal(0, new SlayFishGoal<>(this));
+	}
+
+	/**
+	 * Sets the active target the Task system uses for tracking
+	 */
+	public void setAttackTarget(@Nullable LivingEntity entitylivingbaseIn) {
+		super.setAttackTarget(entitylivingbaseIn);
 	}
 
 	/**
@@ -99,8 +91,7 @@ public class SharkEntity extends WaterMobEntity {
 	 * A sad attempt at getting my shark to do something remotely interesting (from
 	 * the dolphin class)
 	 */
-	@Override
-	public boolean attackEntityAsMob(Entity entityIn) {
+	public boolean attackEntityAsMob(PlayerEntity entityIn) {
 		boolean flag = entityIn.attackEntityFrom(DamageSource.causeMobDamage(this),
 				(float) ((int) this.getAttribute(SharedMonsterAttributes.ATTACK_DAMAGE).getValue()));
 		if (flag) {
@@ -147,7 +138,7 @@ public class SharkEntity extends WaterMobEntity {
 		this.getAttribute(SharedMonsterAttributes.MAX_HEALTH).setBaseValue(50.0D);
 		this.getAttribute(SharedMonsterAttributes.KNOCKBACK_RESISTANCE).setBaseValue(10.0D);
 		this.getAttribute(SharedMonsterAttributes.ARMOR).setBaseValue(10.0D);
-		this.getAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue(1.5D);
+		this.getAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue(0.5D);
 	}
 
 	/**
@@ -158,11 +149,26 @@ public class SharkEntity extends WaterMobEntity {
 		this.dataManager.register(MOISTNESS, 2400);
 	}
 
+	// working code:
+	// attack someone
+	// attackEntityAsMob(this.world.getClosestPlayer(this, 50));
+	// SharkMod.LOGGER.info("Closest player is: " +
+	// this.world.getClosestPlayer(this, 50).getName());
+
 	/**
 	 * Called to update the entity's position/logic.
 	 */
 	public void tick() {
 		super.tick();
+		this.tickTimer++;
+		if (this.tickTimer == 40) {
+			// this.moveController.setMoveTo(32, this.getEyeHeight(), 70, 0.5D);
+			// this.move(MoverType.SELF, new Vec3d(32, this.getEyeHeight(), 70));
+
+			//
+			// tickTimer = 0;
+		}
+
 		// this.lookController.setLookPosition(32, this.getPosYEye(), 70);
 
 		/*
@@ -210,6 +216,7 @@ public class SharkEntity extends WaterMobEntity {
 				}
 			}
 		}
+
 	}
 
 	public void travel(Vec3d positionIn) {
@@ -225,9 +232,10 @@ public class SharkEntity extends WaterMobEntity {
 		}
 	}
 
-	protected PathNavigator createNavigator(World worldIn) {
-		return new SwimmerPathNavigator(this, worldIn);
-	}
+	/*
+	 * protected PathNavigator createNavigator(World worldIn) { return new
+	 * SwimmerPathNavigator(this, worldIn); }
+	 */
 
 	public int getVerticalFaceSpeed() {
 		return 1;
@@ -236,14 +244,15 @@ public class SharkEntity extends WaterMobEntity {
 	public int getHorizontalFaceSpeed() {
 		return 1;
 	}
-	
-	public static boolean func_223364_b(EntityType<SharkEntity> sharkEntity, IWorld world, SpawnReason reason, BlockPos somePos, Random rand) {
-		//If somePos in between 45 and sea level AND
-		//If somePos not in ocean or deep ocean AND
-		//If somePos is tagged water
+
+	public static boolean func_223364_b(EntityType<SharkEntity> sharkEntity, IWorld world, SpawnReason reason,
+			BlockPos somePos, Random rand) {
+		// If somePos in between 45 and sea level AND
+		// If somePos not in ocean or deep ocean AND
+		// If somePos is tagged water
 		return somePos.getY() > 45 && somePos.getY() < world.getSeaLevel()
 				&& (world.getBiome(somePos) != Biomes.OCEAN || world.getBiome(somePos) != Biomes.DEEP_OCEAN)
 				&& world.getFluidState(somePos).isTagged(FluidTags.WATER);
-	   }
+	}
 
 }
