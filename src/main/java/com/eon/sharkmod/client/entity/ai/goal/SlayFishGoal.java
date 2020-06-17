@@ -1,20 +1,23 @@
 package com.eon.sharkmod.client.entity.ai.goal;
 
+import java.util.function.Predicate;
+
 import com.eon.sharkmod.entities.SharkEntity;
 
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.MobEntity;
 import net.minecraft.entity.ai.goal.NearestAttackableTargetGoal;
 import net.minecraft.entity.passive.fish.SalmonEntity;
 import net.minecraft.world.World;
 
-public class SlayFishGoal<T extends LivingEntity> extends NearestAttackableTargetGoal<T> {
+public class SlayFishGoal extends NearestAttackableTargetGoal<LivingEntity> {
 	private final SharkEntity shark;
-	private final World world;
-
-	public SlayFishGoal(SharkEntity sharkIn) {
-		super(sharkIn, (Class<T>) SalmonEntity.class, 10, true, false, null);
-		this.shark = sharkIn;
-		this.world = sharkIn.world;
+	
+	public SlayFishGoal(MobEntity goalOwnerIn, Class<LivingEntity> targetClassIn, int targetChanceIn,
+			boolean checkSight, boolean nearbyOnlyIn, Predicate<LivingEntity> targetPredicate) {
+		super(goalOwnerIn, targetClassIn, targetChanceIn, checkSight, nearbyOnlyIn, targetPredicate);
+		// TODO Auto-generated constructor stub
+		this.shark = (SharkEntity) goalOwnerIn;
 	}
 
 	/**
