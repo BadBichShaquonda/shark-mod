@@ -7,6 +7,7 @@ import java.util.function.Predicate;
 import javax.annotation.Nullable;
 
 import com.eon.sharkmod.SharkMod;
+import com.eon.sharkmod.client.entity.ai.goal.SharkAttackGoal;
 
 import net.minecraft.entity.CreatureAttribute;
 import net.minecraft.entity.Entity;
@@ -19,13 +20,15 @@ import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.entity.SpawnReason;
 import net.minecraft.entity.ai.controller.LookController;
 import net.minecraft.entity.ai.controller.MovementController;
+import net.minecraft.entity.ai.goal.AvoidEntityGoal;
 import net.minecraft.entity.ai.goal.Goal;
-import net.minecraft.entity.ai.goal.MeleeAttackGoal;
 import net.minecraft.entity.ai.goal.NearestAttackableTargetGoal;
 import net.minecraft.entity.ai.goal.RandomWalkingGoal;
 import net.minecraft.entity.monster.GuardianEntity;
+import net.minecraft.entity.passive.DolphinEntity;
 import net.minecraft.entity.passive.SquidEntity;
 import net.minecraft.entity.passive.WaterMobEntity;
+import net.minecraft.entity.passive.fish.AbstractFishEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.network.datasync.DataParameter;
 import net.minecraft.network.datasync.DataSerializers;
@@ -73,8 +76,12 @@ public class SharkEntity extends WaterMobEntity {
 	}
 
 	protected void registerGoals() {
-		this.goalSelector.addGoal(2, new MeleeAttackGoal(this, 1.0D, false));
-		this.targetSelector.addGoal(1, new NearestAttackableTargetGoal<>(this, GuardianEntity.class, true));
+		this.goalSelector.addGoal(2, new SharkAttackGoal(this, 1.0D, false));
+		this.goalSelector.addGoal(3, new AvoidEntityGoal<>(this, DolphinEntity.class, 6.0F, 1.0D, 1.2D));
+		this.targetSelector.addGoal(4, new NearestAttackableTargetGoal<>(this, PlayerEntity.class, true));
+		this.targetSelector.addGoal(8, new NearestAttackableTargetGoal<>(this, AbstractFishEntity.class, true));
+		this.targetSelector.addGoal(8, new NearestAttackableTargetGoal<>(this, GuardianEntity.class, true));
+		this.targetSelector.addGoal(8, new NearestAttackableTargetGoal<>(this, SquidEntity.class, true));
 //		MoveTowardsRestrictionGoal movetowardsrestrictiongoal = new MoveTowardsRestrictionGoal(this, 1.0D);
 //		this.wander = new RandomWalkingGoal(this, 1.0D, 80);
 //		this.goalSelector.addGoal(4, new SharkEntity.AttackGoal(this));
