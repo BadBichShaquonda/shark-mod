@@ -16,6 +16,6 @@ public class ModEntityTypes {
 	public static final DeferredRegister<EntityType<?>> ENTITY_TYPES = new DeferredRegister<>(ForgeRegistries.ENTITIES,SharkMod.MOD_ID);
 
 	public static final RegistryObject<EntityType<SharkEntity>> SHARK = ENTITY_TYPES.register("shark",
-			() -> EntityType.Builder.<SharkEntity>create(SharkEntity::new, EntityClassification.WATER_CREATURE).size(1.1F, 0.8F)
+			() -> EntityType.Builder.<SharkEntity>create(SharkEntity::new, EntityClassification.WATER_CREATURE).size(1.8F, 0.9F)
 					.build(new ResourceLocation(SharkMod.MOD_ID, "shark").toString()));
 }

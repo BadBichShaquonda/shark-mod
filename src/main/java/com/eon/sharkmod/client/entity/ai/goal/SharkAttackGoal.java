@@ -2,7 +2,6 @@ package com.eon.sharkmod.client.entity.ai.goal;
 
 import java.util.EnumSet;
 
-import net.minecraft.block.Blocks;
 import net.minecraft.entity.CreatureEntity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.ai.goal.Goal;
@@ -17,9 +16,11 @@ import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
 
 /**
- * This class is a copy of Melee Attack Goal.
+ * This class is an adapted version of of Melee Attack Goal.
  * 
- * I have added a boat riding check in the checkAndPerformAttack
+ * I have added a boat riding check in the checkAndPerformAttack.
+ * 
+ * NOTE: Sharks cannot break modded boats.
  * 
  * @author Michael
  */
@@ -172,46 +173,44 @@ public class SharkAttackGoal extends Goal {
 		if (distToEnemySqr <= d0 && this.attackTick <= 0) {
 			if(enemy.isPassenger() && enemy.getRidingEntity().getClass() == BoatEntity.class) {
 				BoatEntity boat = (BoatEntity) enemy.getRidingEntity();
-				boat.entityDropItem(boat.getItemBoat());
-				boat.remove();
+				dropBrokenBoatPiecesAndBreak(boat);
 			} else {
 				this.attackTick = 20;
 				this.attacker.swingArm(Hand.MAIN_HAND);
 				this.attacker.attackEntityAsMob(enemy);				
 			}
 		}
-
 	}
 
 	/**
 	 * Takes a boat, drops 3 wood planks and 2 sticks and destroys it.
 	 * 
-	 * NOTE: Will drop oak wook for modded boats!
 	 * @param boat
 	 */
 	protected void dropBrokenBoatPiecesAndBreak(BoatEntity boat) {
 		switch (boat.getBoatType()) {
 		case OAK:
 		default:
-			boat.entityDropItem(Items.OAK_PLANKS, 3);
+			boat.entityDropItem(new ItemStack(Items.OAK_PLANKS, 3));
 			break;
 		case SPRUCE:
-			boat.entityDropItem(Items.SPRUCE_PLANKS, 3);
+			boat.entityDropItem(new ItemStack(Items.SPRUCE_PLANKS, 3));
 			break;
 		case BIRCH:
-			boat.entityDropItem(Items.BIRCH_PLANKS, 3);
+			boat.entityDropItem(new ItemStack(Items.BIRCH_PLANKS, 3));
 			break;
 		case JUNGLE:
-			boat.entityDropItem(Items.JUNGLE_PLANKS, 3);
+			boat.entityDropItem(new ItemStack(Items.JUNGLE_PLANKS, 3));
 			break;
 		case ACACIA:
-			boat.entityDropItem(Items.ACACIA_PLANKS, 3);
+			boat.entityDropItem(new ItemStack(Items.ACACIA_PLANKS, 3));
 			break;
 		case DARK_OAK:
-			boat.entityDropItem(Items.DARK_OAK_PLANKS, 3);
+			boat.entityDropItem(new ItemStack(Items.DARK_OAK_PLANKS, 3));
 			break;
 		}
-		boat.entityDropItem(Items.STICK, 2);
+		boat.entityDropItem(new ItemStack(Items.STICK, 2));
+		boat.remove();
 	}
 
 	protected double getAttackReachSqr(LivingEntity attackTarget) {

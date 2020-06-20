@@ -1,6 +1,5 @@
 package com.eon.sharkmod.entities;
 
-import java.util.EnumSet;
 import java.util.Random;
 import java.util.function.Predicate;
 
@@ -21,7 +20,7 @@ import net.minecraft.entity.SpawnReason;
 import net.minecraft.entity.ai.controller.LookController;
 import net.minecraft.entity.ai.controller.MovementController;
 import net.minecraft.entity.ai.goal.AvoidEntityGoal;
-import net.minecraft.entity.ai.goal.Goal;
+import net.minecraft.entity.ai.goal.HurtByTargetGoal;
 import net.minecraft.entity.ai.goal.NearestAttackableTargetGoal;
 import net.minecraft.entity.ai.goal.RandomWalkingGoal;
 import net.minecraft.entity.monster.GuardianEntity;
@@ -71,29 +70,16 @@ public class SharkEntity extends WaterMobEntity {
 		this.experienceValue = 10;
 		this.setPathPriority(PathNodeType.WATER, 0.0F);
 		this.moveController = new SharkEntity.MoveHelperController(this);
-		this.clientSideTailAnimation = this.rand.nextFloat();
-		this.clientSideTailAnimationO = this.clientSideTailAnimation;
 	}
 
 	protected void registerGoals() {
 		this.goalSelector.addGoal(2, new SharkAttackGoal(this, 1.0D, false));
 		this.goalSelector.addGoal(3, new AvoidEntityGoal<>(this, DolphinEntity.class, 6.0F, 1.0D, 1.2D));
+		this.targetSelector.addGoal(1, new HurtByTargetGoal(this));
 		this.targetSelector.addGoal(4, new NearestAttackableTargetGoal<>(this, PlayerEntity.class, true));
 		this.targetSelector.addGoal(8, new NearestAttackableTargetGoal<>(this, AbstractFishEntity.class, true));
 		this.targetSelector.addGoal(8, new NearestAttackableTargetGoal<>(this, GuardianEntity.class, true));
 		this.targetSelector.addGoal(8, new NearestAttackableTargetGoal<>(this, SquidEntity.class, true));
-//		MoveTowardsRestrictionGoal movetowardsrestrictiongoal = new MoveTowardsRestrictionGoal(this, 1.0D);
-//		this.wander = new RandomWalkingGoal(this, 1.0D, 80);
-//		this.goalSelector.addGoal(4, new SharkEntity.AttackGoal(this));
-//		this.goalSelector.addGoal(5, movetowardsrestrictiongoal);
-//		this.goalSelector.addGoal(7, this.wander);
-//		this.goalSelector.addGoal(8, new LookAtGoal(this, PlayerEntity.class, 8.0F));
-//		this.goalSelector.addGoal(8, new LookAtGoal(this, SharkEntity.class, 12.0F, 0.01F));
-//		this.goalSelector.addGoal(9, new LookRandomlyGoal(this));
-//		this.wander.setMutexFlags(EnumSet.of(Goal.Flag.MOVE, Goal.Flag.LOOK));
-//		movetowardsrestrictiongoal.setMutexFlags(EnumSet.of(Goal.Flag.MOVE, Goal.Flag.LOOK));
-//		this.targetSelector.addGoal(1, new NearestAttackableTargetGoal<>(this, LivingEntity.class, 10, true, false,
-//				new SharkEntity.TargetPredicate(this)));
 	}
 
 	protected void registerAttributes() {
@@ -136,10 +122,6 @@ public class SharkEntity extends WaterMobEntity {
 
 	public int getAttackDuration() {
 		return 80;
-	}
-
-	private void setTargetedEntity(int entityId) {
-		this.dataManager.set(TARGET_ENTITY, entityId);
 	}
 
 	public boolean hasTargetedEntity() {
@@ -375,90 +357,6 @@ public class SharkEntity extends WaterMobEntity {
 
 	}
 
-	static class AttackGoal extends Goal {
-		private final SharkEntity guardian;
-		private int tickCounter;
-		private final boolean isElder;
-
-		public AttackGoal(SharkEntity guardian) {
-			this.guardian = guardian;
-			this.isElder = false;
-			this.setMutexFlags(EnumSet.of(Goal.Flag.MOVE, Goal.Flag.LOOK));
-		}
-
-		/**
-		 * Returns whether execution should begin. You can also read and cache any state
-		 * necessary for execution in this method as well.
-		 */
-		public boolean shouldExecute() {
-			LivingEntity livingentity = this.guardian.getAttackTarget();
-			return livingentity != null && livingentity.isAlive();
-		}
-
-		/**
-		 * Returns whether an in-progress EntityAIBase should continue executing
-		 */
-		public boolean shouldContinueExecuting() {
-			return super.shouldContinueExecuting()
-					&& (this.isElder || this.guardian.getDistanceSq(this.guardian.getAttackTarget()) > 9.0D);
-		}
-
-		/**
-		 * Execute a one shot task or start executing a continuous task
-		 */
-		public void startExecuting() {
-			this.tickCounter = -10;
-			this.guardian.getNavigator().clearPath();
-			this.guardian.getLookController().setLookPositionWithEntity(this.guardian.getAttackTarget(), 90.0F, 90.0F);
-			this.guardian.isAirBorne = true;
-		}
-
-		/**
-		 * Reset the task's internal state. Called when this task is interrupted by
-		 * another one
-		 */
-		public void resetTask() {
-			this.guardian.setTargetedEntity(0);
-			this.guardian.setAttackTarget((LivingEntity) null);
-			this.guardian.wander.makeUpdate();
-		}
-
-		/**
-		 * Keep ticking a continuous task that has already been started
-		 */
-		public void tick() {
-			LivingEntity livingentity = this.guardian.getAttackTarget();
-			this.guardian.getNavigator().clearPath();
-			this.guardian.getLookController().setLookPositionWithEntity(livingentity, 90.0F, 90.0F);
-			if (!this.guardian.canEntityBeSeen(livingentity)) {
-				this.guardian.setAttackTarget((LivingEntity) null);
-			} else {
-				++this.tickCounter;
-				if (this.tickCounter == 0) {
-					this.guardian.setTargetedEntity(this.guardian.getAttackTarget().getEntityId());
-					this.guardian.world.setEntityState(this.guardian, (byte) 21);
-				} else if (this.tickCounter >= this.guardian.getAttackDuration()) {
-					float f = 1.0F;
-					if (this.guardian.world.getDifficulty() == Difficulty.HARD) {
-						f += 2.0F;
-					}
-
-					if (this.isElder) {
-						f += 2.0F;
-					}
-
-					livingentity.attackEntityFrom(DamageSource.causeIndirectMagicDamage(this.guardian, this.guardian),
-							f);
-					livingentity.attackEntityFrom(DamageSource.causeMobDamage(this.guardian),
-							(float) this.guardian.getAttribute(SharedMonsterAttributes.ATTACK_DAMAGE).getValue());
-					this.guardian.setAttackTarget((LivingEntity) null);
-				}
-
-				super.tick();
-			}
-		}
-	}
-
 	static class MoveHelperController extends MovementController {
 		private final SharkEntity entityGuardian;
 		private int tickTimer;
@@ -509,11 +407,14 @@ public class SharkEntity extends WaterMobEntity {
 				this.entityGuardian.getLookController().setLookPosition(MathHelper.lerp(0.125D, d11, d8),
 						MathHelper.lerp(0.125D, d12, d9), MathHelper.lerp(0.125D, d13, d10), 10.0F, 40.0F);
 				this.entityGuardian.setMoving(true);
-				if (this.tickTimer == 20) SharkMod.LOGGER.info("is moving: true, look position: x=" + MathHelper.lerp(0.125D, d11, d8) + ", y=" + MathHelper.lerp(0.125D, d12, d9) + ", z=" + MathHelper.lerp(0.125D, d13, d10));
+				if (this.tickTimer == 20)
+					SharkMod.LOGGER.info("is moving: true, look position: x=" + MathHelper.lerp(0.125D, d11, d8)
+							+ ", y=" + MathHelper.lerp(0.125D, d12, d9) + ", z=" + MathHelper.lerp(0.125D, d13, d10));
 			} else {
 				this.entityGuardian.setAIMoveSpeed(0.0F);
 				this.entityGuardian.setMoving(false);
-				if (this.tickTimer == 20) SharkMod.LOGGER.info("is moving: false");
+				if (this.tickTimer == 20)
+					SharkMod.LOGGER.info("is moving: false");
 			}
 			if (this.tickTimer == 20) {
 				SharkMod.LOGGER.info(
@@ -522,7 +423,7 @@ public class SharkEntity extends WaterMobEntity {
 						+ ", getMotion(): " + this.entityGuardian.getMotion().toString());
 				this.tickTimer = 0;
 			}
-			
+
 			this.tickTimer++;
 		}
 	}
