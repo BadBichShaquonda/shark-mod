@@ -2,7 +2,8 @@ package com.eon.sharkmod.client.entity.ai.goal;
 
 import java.util.EnumSet;
 
-import net.minecraft.entity.CreatureEntity;
+import com.eon.sharkmod.entities.SharkEntity;
+
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.ai.goal.Goal;
 import net.minecraft.entity.item.BoatEntity;
@@ -25,7 +26,7 @@ import net.minecraft.util.math.BlockPos;
  * @author Michael
  */
 public class SharkAttackGoal extends Goal {
-	protected final CreatureEntity attacker;
+	protected final SharkEntity attacker;
 	protected int attackTick;
 	private final double speedTowardsTarget;
 	private final boolean longMemory;
@@ -39,7 +40,7 @@ public class SharkAttackGoal extends Goal {
 	private int failedPathFindingPenalty = 0;
 	private boolean canPenalize = false;
 
-	public SharkAttackGoal(CreatureEntity creature, double speedIn, boolean useLongMemory) {
+	public SharkAttackGoal(SharkEntity creature, double speedIn, boolean useLongMemory) {
 		this.attacker = creature;
 		this.speedTowardsTarget = speedIn;
 		this.longMemory = useLongMemory;

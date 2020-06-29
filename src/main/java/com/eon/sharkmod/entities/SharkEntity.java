@@ -1,11 +1,11 @@
 package com.eon.sharkmod.entities;
 
 import java.util.Random;
-import java.util.function.Predicate;
 
 import javax.annotation.Nullable;
 
 import com.eon.sharkmod.SharkMod;
+import com.eon.sharkmod.client.entity.ai.goal.LurkRandomlyGoal;
 import com.eon.sharkmod.client.entity.ai.goal.SharkAttackGoal;
 
 import net.minecraft.entity.CreatureAttribute;
@@ -21,6 +21,7 @@ import net.minecraft.entity.ai.controller.LookController;
 import net.minecraft.entity.ai.controller.MovementController;
 import net.minecraft.entity.ai.goal.AvoidEntityGoal;
 import net.minecraft.entity.ai.goal.HurtByTargetGoal;
+import net.minecraft.entity.ai.goal.LookRandomlyGoal;
 import net.minecraft.entity.ai.goal.NearestAttackableTargetGoal;
 import net.minecraft.entity.ai.goal.RandomWalkingGoal;
 import net.minecraft.entity.monster.GuardianEntity;
@@ -32,7 +33,6 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.network.datasync.DataParameter;
 import net.minecraft.network.datasync.DataSerializers;
 import net.minecraft.network.datasync.EntityDataManager;
-import net.minecraft.particles.ParticleTypes;
 import net.minecraft.pathfinding.PathNavigator;
 import net.minecraft.pathfinding.PathNodeType;
 import net.minecraft.pathfinding.SwimmerPathNavigator;
@@ -62,7 +62,6 @@ public class SharkEntity extends WaterMobEntity {
 	protected float clientSideSpikesAnimationO;
 	private LivingEntity targetedEntity;
 	private int clientSideAttackTime;
-	private boolean clientSideTouchedGround;
 	protected RandomWalkingGoal wander;
 
 	public SharkEntity(EntityType<? extends SharkEntity> type, World worldIn) {
@@ -73,10 +72,12 @@ public class SharkEntity extends WaterMobEntity {
 	}
 
 	protected void registerGoals() {
-		this.goalSelector.addGoal(2, new SharkAttackGoal(this, 1.0D, false));
 		this.goalSelector.addGoal(3, new AvoidEntityGoal<>(this, DolphinEntity.class, 6.0F, 1.0D, 1.2D));
+		this.goalSelector.addGoal(4, new SharkAttackGoal(this, 1.0D, false));
+		this.goalSelector.addGoal(5, new LurkRandomlyGoal(this, 0.25D));
+		this.goalSelector.addGoal(7, new LookRandomlyGoal(this));
 		this.targetSelector.addGoal(1, new HurtByTargetGoal(this));
-		this.targetSelector.addGoal(4, new NearestAttackableTargetGoal<>(this, PlayerEntity.class, true));
+		this.targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, PlayerEntity.class, true));
 		this.targetSelector.addGoal(8, new NearestAttackableTargetGoal<>(this, AbstractFishEntity.class, true));
 		this.targetSelector.addGoal(8, new NearestAttackableTargetGoal<>(this, GuardianEntity.class, true));
 		this.targetSelector.addGoal(8, new NearestAttackableTargetGoal<>(this, SquidEntity.class, true));
@@ -193,101 +194,6 @@ public class SharkEntity extends WaterMobEntity {
 				: super.getBlockPathWeight(pos, worldIn);
 	}
 
-	/**
-	 * Called frequently so the entity can update its state every tick as required.
-	 * For example, zombies and skeletons use this to react to sunlight and start to
-	 * burn.
-	 */
-	public void livingTick() {
-		if (this.isAlive()) {
-			if (this.world.isRemote) {
-				this.clientSideTailAnimationO = this.clientSideTailAnimation;
-				if (!this.isInWater()) {
-					this.clientSideTailAnimationSpeed = 2.0F;
-					Vec3d vec3d = this.getMotion();
-					if (vec3d.y > 0.0D && this.clientSideTouchedGround && !this.isSilent()) {
-						this.world.playSound(this.getPosX(), this.getPosY(), this.getPosZ(), this.getFlopSound(),
-								this.getSoundCategory(), 1.0F, 1.0F, false);
-					}
-
-					this.clientSideTouchedGround = vec3d.y < 0.0D
-							&& this.world.isTopSolid((new BlockPos(this)).down(), this);
-				} else if (this.isMoving()) {
-					if (this.clientSideTailAnimationSpeed < 0.5F) {
-						this.clientSideTailAnimationSpeed = 4.0F;
-					} else {
-						this.clientSideTailAnimationSpeed += (0.5F - this.clientSideTailAnimationSpeed) * 0.1F;
-					}
-				} else {
-					this.clientSideTailAnimationSpeed += (0.125F - this.clientSideTailAnimationSpeed) * 0.2F;
-				}
-
-				this.clientSideTailAnimation += this.clientSideTailAnimationSpeed;
-				this.clientSideSpikesAnimationO = this.clientSideSpikesAnimation;
-				if (!this.isInWaterOrBubbleColumn()) {
-					this.clientSideSpikesAnimation = this.rand.nextFloat();
-				} else if (this.isMoving()) {
-					this.clientSideSpikesAnimation += (0.0F - this.clientSideSpikesAnimation) * 0.25F;
-				} else {
-					this.clientSideSpikesAnimation += (1.0F - this.clientSideSpikesAnimation) * 0.06F;
-				}
-
-				if (this.isMoving() && this.isInWater()) {
-					Vec3d vec3d1 = this.getLook(0.0F);
-
-					for (int i = 0; i < 2; ++i) {
-						this.world.addParticle(ParticleTypes.BUBBLE, this.getPosXRandom(0.5D) - vec3d1.x * 1.5D,
-								this.getPosYRandom() - vec3d1.y * 1.5D, this.getPosZRandom(0.5D) - vec3d1.z * 1.5D,
-								0.0D, 0.0D, 0.0D);
-					}
-				}
-
-				if (this.hasTargetedEntity()) {
-					if (this.clientSideAttackTime < this.getAttackDuration()) {
-						++this.clientSideAttackTime;
-					}
-
-					LivingEntity livingentity = this.getTargetedEntity();
-					if (livingentity != null) {
-						this.getLookController().setLookPositionWithEntity(livingentity, 90.0F, 90.0F);
-						this.getLookController().tick();
-						double d5 = (double) this.getAttackAnimationScale(0.0F);
-						double d0 = livingentity.getPosX() - this.getPosX();
-						double d1 = livingentity.getPosYHeight(0.5D) - this.getPosYEye();
-						double d2 = livingentity.getPosZ() - this.getPosZ();
-						double d3 = Math.sqrt(d0 * d0 + d1 * d1 + d2 * d2);
-						d0 = d0 / d3;
-						d1 = d1 / d3;
-						d2 = d2 / d3;
-						double d4 = this.rand.nextDouble();
-
-						while (d4 < d3) {
-							d4 += 1.8D - d5 + this.rand.nextDouble() * (1.7D - d5);
-							this.world.addParticle(ParticleTypes.BUBBLE, this.getPosX() + d0 * d4,
-									this.getPosYEye() + d1 * d4, this.getPosZ() + d2 * d4, 0.0D, 0.0D, 0.0D);
-						}
-					}
-				}
-			}
-
-			if (this.isInWaterOrBubbleColumn()) {
-				this.setAir(300);
-			} else if (this.onGround) {
-				this.setMotion(this.getMotion().add((double) ((this.rand.nextFloat() * 2.0F - 1.0F) * 0.4F), 0.5D,
-						(double) ((this.rand.nextFloat() * 2.0F - 1.0F) * 0.4F)));
-				this.rotationYaw = this.rand.nextFloat() * 360.0F;
-				this.onGround = false;
-				this.isAirBorne = true;
-			}
-
-			if (this.hasTargetedEntity()) {
-				this.rotationYaw = this.rotationYawHead;
-			}
-		}
-
-		super.livingTick();
-	}
-
 	protected SoundEvent getFlopSound() {
 		return SoundEvents.ENTITY_GUARDIAN_FLOP;
 	}
@@ -315,24 +221,6 @@ public class SharkEntity extends WaterMobEntity {
 		return (p_223329_4_.nextInt(20) == 0 || !p_223329_1_.canBlockSeeSky(p_223329_3_))
 				&& p_223329_1_.getDifficulty() != Difficulty.PEACEFUL
 				&& (reason == SpawnReason.SPAWNER || p_223329_1_.getFluidState(p_223329_3_).isTagged(FluidTags.WATER));
-	}
-
-	/**
-	 * Called when the entity is attacked.
-	 */
-	public boolean attackEntityFrom(DamageSource source, float amount) {
-		if (!this.isMoving() && !source.isMagicDamage() && source.getImmediateSource() instanceof LivingEntity) {
-			LivingEntity livingentity = (LivingEntity) source.getImmediateSource();
-			if (!source.isExplosion()) {
-				livingentity.attackEntityFrom(DamageSource.causeThornsDamage(this), 2.0F);
-			}
-		}
-
-		if (this.wander != null) {
-			this.wander.makeUpdate();
-		}
-
-		return super.attackEntityFrom(source, amount);
 	}
 
 	/**
@@ -425,19 +313,6 @@ public class SharkEntity extends WaterMobEntity {
 			}
 
 			this.tickTimer++;
-		}
-	}
-
-	static class TargetPredicate implements Predicate<LivingEntity> {
-		private final SharkEntity parentEntity;
-
-		public TargetPredicate(SharkEntity guardian) {
-			this.parentEntity = guardian;
-		}
-
-		public boolean test(@Nullable LivingEntity livingEntity) {
-			return (livingEntity instanceof PlayerEntity || livingEntity instanceof SquidEntity)
-					&& livingEntity.getDistanceSq(this.parentEntity) > 9.0D;
 		}
 	}
 
